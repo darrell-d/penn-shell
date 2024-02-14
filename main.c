@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "helpers.h"
+
 #include "parser.h"
 
 #ifndef PROMPT
@@ -61,7 +61,7 @@ int main() {
 
     // Pull out into function
     for (int i = 0; i < cmd->num_commands; i++) {
-      fprintf(stderr, "execute command %i: %s\n", i, *cmd->commands[0][0]);
+      fprintf(stderr, "execute command %i: %s\n", i, cmd->commands[0][0]);
       // 1. get_cmd_args(cmd, &cmdArgs)
       // 2. Fork and wait?
       // 3. execvp(*cmd->commands[i] + cmdArgs)
