@@ -4,17 +4,7 @@
 #include "parser.h"
 
 int main() {
-  // 1. Run and wait for input from std in
-  // Block and wait for input from stdin
-  // while not sig kill (or other ending sequence)
-  // Listen for input
-  // Recieve input
-  //                  2. Parse out the commands (just a function call)
-  // 3. Run the commands
-  // execev
-  // start by executing ls command
-  // run the cat command with input
-  // .. other things
+
   struct parsed_command* cmd;
 
   // i is error code
