@@ -9,6 +9,4 @@ int count_items(char* array[]) {
   return counter;
 }
 
-// char* get_cmd_args(char** cmd, char* cmdArgs) {
-
-// }
+// char* get_cmd_args(char** cmd, char* cmdArgs) {}
