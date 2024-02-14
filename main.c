@@ -1,38 +1,45 @@
+#define BUF_LEN 4096U
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include "parser.h"
 
+#ifndef PROMPT
+#define PROMPT "penn-shredder# "
+#endif
+
 int main() {
-  struct parsed_command* cmd;
+  char command[BUF_LEN] = {0};
 
-  int i = parse_command("cat < asd |  sleep >>test.c 1 & ", &cmd);
-  if (i < 0) {
-    perror("parse_command");
-    return 1;
+  while (true) {
+    ssize_t res = write(STDERR_FILENO, PROMPT, strlen(PROMPT));
+    if (res < 0) {
+      fprintf(stderr, "error prompting user\n");
+      exit(EXIT_FAILURE);
+    }
+
+    res = read(STDIN_FILENO, command, BUF_LEN - 1);
+    if (res < 0) {
+      fprintf(stderr, "error prompting user\n");
+      exit(EXIT_FAILURE);
+    } else if (res == 0) {
+      break;
+    }
+
+    command[res] = '\0';
+
+    struct parsed_command* cmd = NULL;
+    int result = parse_command(command, &cmd);
+    if (result != 0) {
+      fprintf(stderr, "error parsing command\n");
+      continue;
+    }
+
+    print_parsed_command(stderr, cmd);
+    fprintf(stderr, "\n");
+    free(cmd);
   }
-  if (i > 0) {
-    printf("parser error: %d\n", i);
-    return 1;
-  }
 
-  print_parsed_command(stderr, cmd);
-
-  printf("Is background job:\t%s\n", cmd->is_background ? "true" : "false");
-  printf("Is append output file:\t%s\n",
-         cmd->is_file_append ? "true" : "false");
-
-  printf("Input file name:\t%s\n", cmd->stdin_file);
-  printf("Output file name:\t%s\n", cmd->stdout_file);
-
-  printf("Number of commands:\t%zu\n", cmd->num_commands);
-
-  for (int i = 0; i < cmd->num_commands; ++i) {
-    printf("Pipeline %d:\t%p\n", i, (void*)cmd->commands[i]);
-    // directly use commands[i] as argv, e.g.
-    //   execvp(cmd->commands[i][0], cmd->commands[i]);
-  }
-
-  free(cmd);
-  return 0;
+  return EXIT_SUCCESS;
 }
