@@ -2,6 +2,7 @@
 #define HELPERS_H
 #define READ 0
 #define WRITE 1
+#define PERMISSION 0644
 
 #include <stddef.h>
 #include <stdio.h>
@@ -9,6 +10,8 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "parser.h"
 

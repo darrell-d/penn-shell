@@ -63,6 +63,43 @@ void execute_command(struct parsed_command *cmd, struct pipe_holder *holder, int
       }
     }
 
+    // Redirect stdin to read from a file if necessary
+    if (cmd->stdin_file != NULL) {
+      int flags = O_RDONLY | O_CREAT;
+      int fd = open(cmd->stdin_file, flags, PERMISSION);
+      if (fd < 0) {
+        perror("open");
+        exit(EXIT_FAILURE);
+      }
+      int ret = dup2(fd, STDIN_FILENO);
+      if (ret < 0) {
+        perror("dup2");
+        exit(EXIT_FAILURE);
+      }
+      close(fd);
+    }
+
+    // Redirect stdout to write to a file if necessary
+    if (cmd->stdout_file != NULL) {
+      int flags = O_WRONLY | O_CREAT;
+      if (cmd->is_file_append) {
+        flags |= O_APPEND;
+      } else {
+        flags |= O_TRUNC;
+      }
+      int fd = open(cmd->stdout_file, flags, PERMISSION);
+      if (fd < 0) {
+        perror("open");
+        exit(EXIT_FAILURE);
+      }
+      int ret = dup2(fd, STDOUT_FILENO);
+      if (ret < 0) {
+        perror("dup2");
+        exit(EXIT_FAILURE);
+      }
+      close(fd);
+    }
+
     // Execute the current command
     execvp(*cmd->commands[pipe_index], cmd->commands[pipe_index]);
     perror("execvp");
