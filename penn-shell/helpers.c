@@ -21,17 +21,14 @@ struct pipe_holder *create_pipe_holder(size_t num_pipes) {
 //  Close the write end of the pipe
 //  Wait for the child process to terminate
 void execute_command(struct parsed_command *cmd, struct pipe_holder *holder, int pipe_index) {
-  // First pipe
-  if (pipe_index == 0) {
-    // Make a pipe
-    int pipe_fds[2];
-    if (pipe(pipe_fds) < 0) {
-      perror("pipe error");
-      exit(EXIT_FAILURE);
-    }
-    holder->pipes[pipe_index][0] = pipe_fds[0];
-    holder->pipes[pipe_index][1] = pipe_fds[1];
+  // Make a pipe
+  int pipe_fds[2];
+  if (pipe(pipe_fds) < 0) {
+    perror("pipe error");
+    exit(EXIT_FAILURE);
   }
+  holder->pipes[pipe_index][0] = pipe_fds[0];
+  holder->pipes[pipe_index][1] = pipe_fds[1];
 
   // Fork a child
   pid_t process_id = fork();
