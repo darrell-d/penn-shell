@@ -100,6 +100,13 @@ int main() {
       }
       printf("Parent process continuing execution\n");
 
+      // make a second pipe for command 2 -> command 3
+        int pipe2_fds[2];
+        if (pipe(pipe2_fds) < 0) {
+          perror("pipe error");
+          exit(EXIT_FAILURE);
+        }
+
       // fork child#2
       pid_t process_id2 = fork();
       if (process_id2 < 0) {
@@ -107,8 +114,19 @@ int main() {
         exit(EXIT_FAILURE);
       } else if (process_id2 == 0) {
         // This is child #2
+
+        // close the read end of the second pipe
+        close(pipe2_fds[READ]);
+
         // redirect standard in to read from the first pipe
         int ret = dup2(pipe1_fds[READ], STDIN_FILENO);
+        if (ret < 0) {
+          perror("dup2");
+          exit(EXIT_FAILURE);
+        }
+
+        // redirect standard out to write to the second pipe
+        ret = dup2(pipe2_fds[WRITE], STDOUT_FILENO);
         if (ret < 0) {
           perror("dup2");
           exit(EXIT_FAILURE);
@@ -129,6 +147,9 @@ int main() {
       // now both parent and child#2 should close the read end of the first pipe
       close(pipe1_fds[READ]);
 
+      // now both parent and child#2 should close the write end of the second pipe
+      close(pipe2_fds[WRITE]);
+
       if (process_id2 > 0) {
         // Parent process
         printf("Parent process waiting for child #2 to terminate\n");
@@ -145,6 +166,53 @@ int main() {
           printf("Child process #2 terminated by signal %d\n", WTERMSIG(status));
         }
         printf("Parent process continuing execution\n");
+
+        // fork child#3
+        pid_t process_id3 = fork();
+        if (process_id3 < 0) {
+          // Bail on failure
+          exit(EXIT_FAILURE);
+        } else if (process_id3 == 0) {
+          // This is child #3
+          // redirect standard in to read from pipe2
+          int ret = dup2(pipe2_fds[READ], STDIN_FILENO);
+          if (ret < 0) {
+            perror("dup2");
+            exit(EXIT_FAILURE);
+          }
+
+          // If there's a third command, run it using the output from the second command (coming from the parent via pipe2) as input
+          if (cmd->num_commands > 2) {
+            execvp(*cmd->commands[2], *cmd->commands);
+            fprintf(stderr, "%s \n", "Execvp failed horribly");
+          } else {
+            // If there's no third command, just run `cat` using the output from the second command (coming from the parent via pipe2) as input
+            char *argv[] = {"cat", NULL};
+            execvp(argv[0], argv);
+            fprintf(stderr, "%s \n", "Execvp failed horribly");
+          }
+        }
+
+        // now both parent and child#3 should close the read end of the second pipe
+        close(pipe2_fds[READ]);
+
+        if (process_id3 > 0) {
+          // Parent process
+          printf("Parent process waiting for child #3 to terminate\n");
+          int status;
+          // Wait for child process #3 to terminate
+          pid_t child_pid = waitpid(process_id3, &status, 0);
+          if (child_pid == -1) {
+            perror("waitpid");
+            exit(EXIT_FAILURE);
+          }
+          if (WIFEXITED(status)) {
+            printf("Child process #3 exited with status %d\n", WEXITSTATUS(status));
+          } else if (WIFSIGNALED(status)) {
+            printf("Child process #3 terminated by signal %d\n", WTERMSIG(status));
+          }
+          printf("Parent process continuing execution\n");
+        }
       }
     }
 
