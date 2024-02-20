@@ -132,8 +132,9 @@ void execute_command(struct parsed_command* cmd,
   }
 }
 
-void signal_handlers(int signo) {
-  if (signo == SIGINT) {
+void signal_silencer(int signo) {
+  if (signo == SIGINT || signo == SIGTTIN || signo == SIGTTOU ||
+      signo == SIGQUIT || signo == SIGTSTP) {
     // Do nothing. Silent ignore
   }
 }

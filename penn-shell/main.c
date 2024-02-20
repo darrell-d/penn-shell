@@ -19,14 +19,15 @@
 #define PROMPT "penn-shredder# "
 #endif
 
-int main() {
-  if (signal(SIGINT, signal_handlers) == SIG_ERR) {
-    printf("Can't handle SIGINT\n");
-    exit(EXIT_FAILURE);
-  }
-  char command[BUF_LEN] = {0};
+const int IGNORED_SIGNALS[] = {SIGINT, SIGTTIN, SIGTTOU, SIGQUIT, SIGTSTP};
+const int NUM_SIGNALS_IGNORED = 5;
 
+int main() {
+  setup_sig_handlers();
+
+  // setup_sig_handlers();
   while (true) {
+    char command[BUF_LEN] = {0};
     ssize_t res = write(STDERR_FILENO, PROMPT, strlen(PROMPT));
     if (res < 0) {
       fprintf(stderr, "error prompting user\n");
@@ -38,10 +39,15 @@ int main() {
       fprintf(stderr, "error prompting user\n");
       exit(EXIT_FAILURE);
     } else if (res == 0) {
+      // EOF recieved with no input. Exit
       break;
     }
 
     command[res] = '\0';
+    // If no new line print one out. Part of handling EOF with input
+    if (command[res - 1 != '\n']) {
+      fprintf(stderr, "\n");
+    }
 
     struct parsed_command* cmd = NULL;
 
@@ -68,4 +74,16 @@ int main() {
   }
 
   return EXIT_SUCCESS;
+}
+
+void setup_sig_handlers() {
+  // Won't work when defined in helpers.c.
+  // Possibly missing understanding of what level signals are set at
+  // Unsure why, but no harm in it staying here
+  for (int i = 0; i < NUM_SIGNALS_IGNORED; i++) {
+    if (signal(IGNORED_SIGNALS[i], signal_silencer) == SIG_ERR) {
+      fprintf(stderr, "Can't handle signal %i, i:%i\n", IGNORED_SIGNALS[i], i);
+      exit(EXIT_FAILURE);
+    }
+  }
 }
