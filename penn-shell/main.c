@@ -19,8 +19,11 @@
 #define PROMPT "penn-shredder# "
 #endif
 
-
 int main() {
+  if (signal(SIGINT, signal_handlers) == SIG_ERR) {
+    printf("Can't handle SIGINT\n");
+    exit(EXIT_FAILURE);
+  }
   char command[BUF_LEN] = {0};
 
   while (true) {
@@ -49,7 +52,7 @@ int main() {
     }
 
     // Initialize a pipe holder
-    struct pipe_holder *holder = NULL;
+    struct pipe_holder* holder = NULL;
 
     // If there are commands, generate pipes and execute them
     if (cmd->num_commands > 0) {

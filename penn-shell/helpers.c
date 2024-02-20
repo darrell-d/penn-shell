@@ -1,8 +1,9 @@
 #include "helpers.h"
 
 // Dynamically allocate a pipe_holder struct
-struct pipe_holder *create_pipe_holder(size_t num_pipes) {
-  struct pipe_holder *holder = malloc(sizeof(struct pipe_holder) + num_pipes * sizeof(size_t[2]));
+struct pipe_holder* create_pipe_holder(size_t num_pipes) {
+  struct pipe_holder* holder =
+      malloc(sizeof(struct pipe_holder) + num_pipes * sizeof(size_t[2]));
   if (holder == NULL) {
     perror("malloc");
     exit(EXIT_FAILURE);
@@ -20,7 +21,9 @@ struct pipe_holder *create_pipe_holder(size_t num_pipes) {
 // Within the parent process:
 //  Close the write end of the pipe
 //  Wait for the child process to terminate
-void execute_command(struct parsed_command *cmd, struct pipe_holder *holder, int pipe_index) {
+void execute_command(struct parsed_command* cmd,
+                     struct pipe_holder* holder,
+                     int pipe_index) {
   // Make a pipe
   int pipe_fds[2];
   if (pipe(pipe_fds) < 0) {
@@ -126,5 +129,11 @@ void execute_command(struct parsed_command *cmd, struct pipe_holder *holder, int
   if (child_pid == -1) {
     perror("waitpid");
     exit(EXIT_FAILURE);
+  }
+}
+
+void signal_handlers(int signo) {
+  if (signo == SIGINT) {
+    // Do nothing. Silent ignore
   }
 }
