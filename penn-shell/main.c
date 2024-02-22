@@ -16,17 +16,14 @@
 #include "parser.h"
 
 int main() {
-  // putc('\0', stdin);
   setup_sig_handlers();
 
   // setup_sig_handlers();
   while (true) {
     char command[BUF_LEN] = {0};
-    ssize_t res = write(STDERR_FILENO, PROMPT, strlen(PROMPT));
-    if (res < 0) {
-      fprintf(stderr, "error prompting user\n");
-      exit(EXIT_FAILURE);
-    }
+    ssize_t res;
+
+    prompt_user();
 
     res = read(STDIN_FILENO, command, BUF_LEN - 1);
     if (res < 0) {

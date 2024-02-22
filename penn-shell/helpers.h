@@ -37,5 +37,6 @@ void execute_command(struct parsed_command* cmd,
 // Signal handlers
 void setup_sig_handlers();
 void signal_silencer(int signo);
+void prompt_user();
 
 #endif /* HELPERS_H */

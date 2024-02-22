@@ -135,12 +135,17 @@ void execute_command(struct parsed_command* cmd,
 void signal_silencer(int signo) {
   if (signo == SIGINT || signo == SIGTTIN || signo == SIGTTOU ||
       signo == SIGQUIT || signo == SIGTSTP) {
-    // Do nothing. Silent ignore
+    // Print newline and igore signal
     fprintf(stderr, "\n");
-    ssize_t res = write(STDERR_FILENO, PROMPT, strlen(PROMPT));
-    if (res < 0) {
-      fprintf(stderr, "error prompting user\n");
-      exit(EXIT_FAILURE);
-    }
+    // Re-prompt user
+    prompt_user();
+  }
+}
+
+void prompt_user() {
+  ssize_t res = write(STDERR_FILENO, PROMPT, strlen(PROMPT));
+  if (res < 0) {
+    fprintf(stderr, "error prompting user\n");
+    exit(EXIT_FAILURE);
   }
 }
