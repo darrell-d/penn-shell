@@ -9,12 +9,16 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
 #include "parser.h"
+#ifndef PROMPT
+#define PROMPT "penn-shredder# "
+#endif
 
 // Struct to hold pipes
 struct pipe_holder {

@@ -136,5 +136,11 @@ void signal_silencer(int signo) {
   if (signo == SIGINT || signo == SIGTTIN || signo == SIGTTOU ||
       signo == SIGQUIT || signo == SIGTSTP) {
     // Do nothing. Silent ignore
+    fprintf(stderr, "\n");
+    ssize_t res = write(STDERR_FILENO, PROMPT, strlen(PROMPT));
+    if (res < 0) {
+      fprintf(stderr, "error prompting user\n");
+      exit(EXIT_FAILURE);
+    }
   }
 }

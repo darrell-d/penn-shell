@@ -8,21 +8,15 @@
 #define BUF_LEN 4096U
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include "helpers.h"
 #include "parser.h"
 
-#ifndef PROMPT
-#define PROMPT "penn-shredder# "
-#endif
-
-const int IGNORED_SIGNALS[] = {SIGINT, SIGTTIN, SIGTTOU, SIGQUIT, SIGTSTP};
-const int NUM_SIGNALS_IGNORED = 5;
-
 int main() {
+  // putc('\0', stdin);
   setup_sig_handlers();
 
   // setup_sig_handlers();
@@ -77,13 +71,24 @@ int main() {
 }
 
 void setup_sig_handlers() {
-  // Won't work when defined in helpers.c.
-  // Possibly missing understanding of what level signals are set at
-  // Unsure why, but no harm in it staying here
-  for (int i = 0; i < NUM_SIGNALS_IGNORED; i++) {
-    if (signal(IGNORED_SIGNALS[i], signal_silencer) == SIG_ERR) {
-      fprintf(stderr, "Can't handle signal %i, i:%i\n", IGNORED_SIGNALS[i], i);
-      exit(EXIT_FAILURE);
-    }
+  if (signal(SIGINT, signal_silencer) == SIG_ERR) {
+    printf("Can't handle SIGINT\n");
+    exit(EXIT_FAILURE);
+  }
+  if (signal(SIGTTIN, signal_silencer) == SIG_ERR) {
+    printf("Can't handle SIGTTIN\n");
+    exit(EXIT_FAILURE);
+  }
+  if (signal(SIGTTOU, signal_silencer) == SIG_ERR) {
+    printf("Can't handle SIGTTOU\n");
+    exit(EXIT_FAILURE);
+  }
+  if (signal(SIGQUIT, signal_silencer) == SIG_ERR) {
+    printf("Can't handle SIGQUIT\n");
+    exit(EXIT_FAILURE);
+  }
+  if (signal(SIGTSTP, signal_silencer) == SIG_ERR) {
+    printf("Can't handle SIGTSTP\n");
+    exit(EXIT_FAILURE);
   }
 }
