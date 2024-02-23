@@ -1,1 +1,4 @@
 ./penn-shell
+*.o
+*.old
+*.txt
