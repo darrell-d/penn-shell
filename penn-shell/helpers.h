@@ -36,5 +36,6 @@ void prompt_user();
 
 // Execute all commands in parallel
 void execute_commands(struct parsed_command* cmd, struct pipe_holder* holder);
+void child_bg_sig_handler(int signo);
 
 #endif /* HELPERS_H */
