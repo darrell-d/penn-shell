@@ -1,8 +1,9 @@
 #include "helpers.h"
 
 // Dynamically allocate a pipe_holder struct
-struct pipe_holder *create_pipe_holder(size_t num_pipes) {
-  struct pipe_holder *holder = malloc(sizeof(struct pipe_holder) + num_pipes * sizeof(size_t[2]));
+struct pipe_holder* create_pipe_holder(size_t num_pipes) {
+  struct pipe_holder* holder =
+      malloc(sizeof(struct pipe_holder) + num_pipes * sizeof(size_t[2]));
   if (holder == NULL) {
     perror("malloc");
     exit(EXIT_FAILURE);
@@ -12,7 +13,7 @@ struct pipe_holder *create_pipe_holder(size_t num_pipes) {
 }
 
 // Wait for all children to terminate
-void wait_for_children(struct parsed_command *cmd) {
+void wait_for_children(struct parsed_command* cmd) {
   for (int i = 0; i < cmd->num_commands; i++) {
     int status;
     pid_t child_pid = waitpid(-1, &status, 0);
@@ -24,7 +25,7 @@ void wait_for_children(struct parsed_command *cmd) {
 }
 
 // Execute all commands in parallel
-void execute_commands(struct parsed_command *cmd, struct pipe_holder *holder) {
+void execute_commands(struct parsed_command* cmd, struct pipe_holder* holder) {
   // Fork all necessary children and create all pipes at the start
   for (int i = 0; i < cmd->num_commands; i++) {
     // n - 1 pipes for n commands
@@ -47,7 +48,7 @@ void execute_commands(struct parsed_command *cmd, struct pipe_holder *holder) {
       exit(EXIT_FAILURE);
     } else if (process_id == 0) {
       // Child process
-      
+
       if (i > 0) {
         // Not the first pipe
         // Close the write end of the previous pipe
@@ -137,8 +138,9 @@ void execute_commands(struct parsed_command *cmd, struct pipe_holder *holder) {
 }
 
 // // Execute command (sequential)
-// // TODO: refactor (split into two functions?) so it doesn't execute everything sequentially
-// void execute_command(struct parsed_command *cmd, struct pipe_holder *holder, int pipe_index) {
+// // TODO: refactor (split into two functions?) so it doesn't execute
+// everything sequentially void execute_command(struct parsed_command *cmd,
+// struct pipe_holder *holder, int pipe_index) {
 //   // Make a pipe
 //   int pipe_fds[2];
 //   if (pipe(pipe_fds) < 0) {

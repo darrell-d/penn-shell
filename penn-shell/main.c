@@ -19,7 +19,6 @@
 #define PROMPT "penn-shredder# "
 #endif
 
-
 int main() {
   char command[BUF_LEN] = {0};
 
@@ -49,8 +48,7 @@ int main() {
     }
 
     // Initialize a pipe holder
-    struct pipe_holder *holder = NULL;
-
+    struct pipe_holder* holder = create_pipe_holder(cmd->num_commands);
     // Execute the commands
     execute_commands(cmd, holder);
 
