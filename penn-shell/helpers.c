@@ -27,11 +27,18 @@ void wait_for_children(struct parsed_command* cmd) {
     pid_t child_pid = -1;
     if (cmd->is_background) {
       child_pid = waitpid(-1, &status, WNOHANG);
-      // Re-prompt user
-      prompt_user();
+      // Set handler for child signals coming from background
+      if (signal(SIGCHLD, child_bg_sig_handler) == SIG_ERR) {
+        printf("Can't handle SIGCHLD\n");
+        exit(EXIT_FAILURE);
+      }
 
     } else {
-      fprintf(stderr, "not bg\n");
+      // set the default signal fo
+      if (signal(SIGCHLD, SIG_DFL) == SIG_ERR) {
+        printf("Can't reset SIGCHLD to default\n");
+        exit(EXIT_FAILURE);
+      }
       child_pid = waitpid(-1, &status, 0);
     }
 
@@ -63,7 +70,7 @@ void signal_silencer_child(int signo) {
 void child_bg_sig_handler(int signo) {
   if (signo == SIGCHLD) {
     // Print newline and igore signal
-    fprintf(stderr, "\n got a signal back from child!");
+    fprintf(stderr, "\n got a signal back from child!\n");
     // Re-prompt user
     prompt_user();
   }

@@ -82,8 +82,4 @@ void setup_sig_handlers() {
     printf("Can't handle SIGTSTP\n");
     exit(EXIT_FAILURE);
   }
-  if (signal(SIGCHLD, child_bg_sig_handler) == SIG_ERR) {
-    printf("Can't handle SIGTSTP\n");
-    exit(EXIT_FAILURE);
-  }
 }
