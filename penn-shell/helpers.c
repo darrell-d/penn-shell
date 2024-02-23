@@ -52,8 +52,6 @@ void wait_for_children(struct parsed_command* cmd) {
 void signal_silencer(int signo) {
   if (signo == SIGINT || signo == SIGTTIN || signo == SIGTTOU ||
       signo == SIGQUIT || signo == SIGTSTP) {
-    // Print newline and igore signal
-    fprintf(stderr, "\n");
     // Re-prompt user
     prompt_user();
   }
@@ -61,15 +59,12 @@ void signal_silencer(int signo) {
 void signal_silencer_child(int signo) {
   if (signo == SIGINT || signo == SIGTTIN || signo == SIGTTOU ||
       signo == SIGQUIT || signo == SIGTSTP) {
-    // Print newline and igore signal
-    fprintf(stderr, "\n child handler\n");
-    // Re-prompt user
+    // Re-prompt user, do nothing else with signal
     prompt_user();
   }
 }
 void child_bg_sig_handler(int signo) {
   if (signo == SIGCHLD) {
-    // Print newline and igore signal
     fprintf(stderr, "\n got a signal back from child!\n");
     // Re-prompt user
     prompt_user();
@@ -107,10 +102,6 @@ void execute_commands(struct parsed_command* cmd, struct pipe_holder* holder) {
       perror("fork");
       exit(EXIT_FAILURE);
     } else if (process_id == 0) {
-      // if (signal(SIGTSTP, signal_silencer_child) == SIG_ERR) {
-      //   printf("Can't handle SIGTSTP\n");
-      //   exit(EXIT_FAILURE);
-      // }
       // Child process
 
       if (i > 0) {
@@ -183,23 +174,26 @@ void execute_commands(struct parsed_command* cmd, struct pipe_holder* holder) {
     }
 
     // put the child in its own process group
-    // if (setpgid(process_id, process_id) == -1) {
-    //   perror("setpgid\n");
-    //   exit(EXIT_FAILURE);
-    // }
+    if (setpgid(process_id, process_id) == -1) {
+      perror("setpgid\n");
+      exit(EXIT_FAILURE);
+    }
 
-    // // give terminal to the child
-    // if (tcsetpgrp(STDIN_FILENO, process_id) == -1) {
-    //   perror("tcsetpgrp\n");
-    //   exit(EXIT_FAILURE);
-    // }
+    // Only give child terminal if it's not a bg process
+    if (!cmd->is_background) {
+      // // give terminal to the child
+      if (tcsetpgrp(STDIN_FILENO, process_id) == -1) {
+        perror("tcsetpgrp\n");
+        exit(EXIT_FAILURE);
+      }
+    }
 
     // int wstatus;
     // waitpid(process_id, &wstatus, 0);
 
     // // ignore SIGTTOU so that tcsetpgrp doesn't stop us
-    // signal(SIGTTOU, SIG_IGN);
-    // tcsetpgrp(STDIN_FILENO, getpgid(0));
+    signal(SIGTTOU, SIG_IGN);
+    tcsetpgrp(STDIN_FILENO, getpgid(0));
 
     // Parent process
     if (i > 0) {
