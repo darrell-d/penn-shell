@@ -49,15 +49,9 @@ int main() {
     }
 
     // Initialize a pipe holder
-    struct pipe_holder* holder = NULL;
-
-    // If there are commands, generate pipes and execute them
-    if (cmd->num_commands > 0) {
-      holder = create_pipe_holder(cmd->num_commands - 1);
-      for (int i = 0; i < cmd->num_commands; i++) {
-        execute_command(cmd, holder, i);
-      }
-    }
+    struct pipe_holder* holder = create_pipe_holder(cmd->num_commands);
+    // Execute the commands
+    execute_commands(cmd, holder);
 
     fprintf(stderr, "\n");
     free(cmd);
