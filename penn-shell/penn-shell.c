@@ -44,7 +44,7 @@ int main() {
 
     int result = parse_command(command, &cmd);
     if (result != 0) {
-      fprintf(stderr, "error parsing command\n");
+      fprintf(stderr, "Invalid: error parsing command\n");
       continue;
     }
 
